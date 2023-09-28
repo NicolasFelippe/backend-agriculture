@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:10.3-alpine
+    ports:
+      - '5432:5432'
+    network_mode: bridge 
+    container_name: postgres_docker
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'pgpass'
+      POSTGRES_DB: 'postgres'
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
