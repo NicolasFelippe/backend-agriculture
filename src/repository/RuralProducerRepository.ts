@@ -2,12 +2,58 @@ import { PrismaClient } from "@prisma/client";
 import { RuralProducerDomain } from "../domain/RuralProducer";
 import { IRuralProducerRepository } from "./IRuralProducerRepository";
 import { entityToDomain } from "./Mapper";
+import { Dashboard } from "../domain/Dashboard";
 
 export class RuralProducerRepository implements IRuralProducerRepository {
 
   #prisma
   constructor(prisma: PrismaClient) {
     this.#prisma = prisma
+  }
+
+  async dashboard(): Promise<Dashboard> {
+    const countFarms = await this.#prisma.farm.count();
+
+    const totalAreas = await this.#prisma.farm.aggregate({
+      _sum: {
+        totalArea: true,
+      },
+    });
+
+    const states = await this.#prisma.farm.groupBy({
+      by: ['state'],
+      _count: {
+        state: true,
+      },
+    });
+
+    const plantedCrops = await this.#prisma.plantedCrop.groupBy({
+      by: ['name'],
+      _count: {
+        name: true,
+      },
+    });
+
+    const vegetationAreaAndAgriculturalArea = await this.#prisma.farm.aggregate({
+      _sum: {
+        agriculturalArea: true,
+        vegetationArea: true,
+      },
+    });
+
+    const dashboard: Dashboard = {
+      countTotalFarms: countFarms,
+      sumAgricuturalArea: vegetationAreaAndAgriculturalArea._sum.agriculturalArea,
+      sumTotalAreaFarms: totalAreas._sum.totalArea,
+      sumVegetationArea: vegetationAreaAndAgriculturalArea._sum.vegetationArea,
+      states: states.map((state) => ({ count: state._count.state,  state: state.state })),
+      plantedCrops: plantedCrops.map((x) => ({
+        count: x._count.name,
+        name: x.name
+      })),
+    }
+
+    return dashboard
   }
 
   async deleteById(id: number): Promise<boolean> {
@@ -68,7 +114,13 @@ export class RuralProducerRepository implements IRuralProducerRepository {
             vegetationArea: produtor.farm.vegetationArea,
             city: produtor.farm.address.city,
             state: produtor.farm.address.state,
-            plantedCrops: produtor.farm.plantedCrops,
+            plantedCrops: {
+              createMany: {
+                data: produtor.farm.plantedCrops.map((platedCrop) => ({
+                  name: platedCrop
+                }))
+              }
+            }
           }
         }
       },
@@ -78,6 +130,10 @@ export class RuralProducerRepository implements IRuralProducerRepository {
   }
 
   async save(ruralProducerDomain: RuralProducerDomain): Promise<RuralProducerDomain> {
+    const plantedCrops = ruralProducerDomain.farm.plantedCrops.map((platedCrop) => ({
+      name: platedCrop
+    }));
+
     const ruralProducerCreated = await this.#prisma.ruralProducer.create({
       data: {
         CpfOrCnpj: ruralProducerDomain.CpfOrCnpj,
@@ -90,17 +146,22 @@ export class RuralProducerRepository implements IRuralProducerRepository {
             vegetationArea: ruralProducerDomain.farm.vegetationArea,
             city: ruralProducerDomain.farm.address.city,
             state: ruralProducerDomain.farm.address.state,
-            plantedCrops: ruralProducerDomain.farm.plantedCrops,
+            plantedCrops: {
+              createMany: {
+                data: plantedCrops,
+                skipDuplicates: false
+              }
+            }
           }
         }
       },
-      select: {
-        CpfOrCnpj: true,
-        createdAt: true,
-        id: true,
-        name: true,
-        updatedAt: true,
-        farm: true
+      include: {
+        farm: {
+          include: {
+            plantedCrops: {
+            }
+          }
+        }
       }
     });
 

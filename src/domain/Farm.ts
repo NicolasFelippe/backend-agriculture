@@ -1,4 +1,4 @@
-import { AreasIncorretasException } from "../exceptions/AreasException"
+import { AreasIncorretasException } from "./exceptions/AreasException"
 import { AddressDomain } from "./Address"
 import { PlantedCrop } from "./enum/PlantedCropsEnum"
 

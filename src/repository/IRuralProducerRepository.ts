@@ -1,3 +1,4 @@
+import { Dashboard } from "../domain/Dashboard";
 import { RuralProducerDomain as RuralProducerDomain } from "../domain/RuralProducer";
 
 export interface IRuralProducerRepository {
@@ -10,4 +11,6 @@ export interface IRuralProducerRepository {
   existById(id: number): Promise<boolean>
 
   deleteById(id:number): Promise<boolean>
+
+  dashboard(): Promise<Dashboard>
 }

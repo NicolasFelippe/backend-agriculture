@@ -1,4 +1,4 @@
-import { PlantedCrop } from "../domain/enum/PlantedCropsEnum"
+import { PlantedCrop } from "../../domain/enum/PlantedCropsEnum"
 import { CreateProducerRequest, FarmRequest } from "./CreateProducerRequest"
 
 export interface UpdateProducerRequest extends Omit<CreateProducerRequest, 'farm'> {

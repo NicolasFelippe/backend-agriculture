@@ -1,9 +1,10 @@
-import { UpdateProducerRequest } from "../controllers/AtualizarProdutorRequest";
-import { AddressRequest, CreateProducerRequest } from "../controllers/CreateProducerRequest";
+import { UpdateProducerRequest } from "../controllers/RuralProducerController/AtualizarProdutorRequest";
+import { AddressRequest, CreateProducerRequest } from "../controllers/RuralProducerController/CreateProducerRequest";
 import { AddressDomain } from "../domain/Address";
+import { Dashboard } from "../domain/Dashboard";
 import { FarmDomain } from "../domain/Farm";
 import { RuralProducerDomain } from "../domain/RuralProducer";
-import { NotFoundException } from "../exceptions/NotFoundException";
+import { NotFoundException } from "../domain/exceptions/NotFoundException";
 import { IRuralProducerRepository } from "../repository/IRuralProducerRepository";
 import { IRuralProducerService } from "./IRuralProducerService";
 
@@ -12,6 +13,10 @@ export class RuralProducerService implements IRuralProducerService {
   #repository
   constructor(produtorRepository: IRuralProducerRepository) {
     this.#repository = produtorRepository
+  }
+
+  async dashboard(): Promise<Dashboard> {
+    return await this.#repository.dashboard()
   }
 
   async getByCnpjOrCpf(cpfOrCnpj: string): Promise<RuralProducerDomain> {
@@ -74,7 +79,7 @@ export class RuralProducerService implements IRuralProducerService {
   async deleteById(id: number): Promise<boolean> {
     const exist = await this.#repository.existById(id);
     if (exist) {
-      return await this.#repository.deleteById(id)
+      return await this.#repository.deleteById(id);
     }
     throw new NotFoundException(`Não existe registro com o id: ${id}`);
   }

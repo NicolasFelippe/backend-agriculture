@@ -1,4 +1,4 @@
-import { CpfCnpjInvalidoException } from '../exceptions/CpfCnpjInvalidoException'
+import { CpfCnpjInvalidoException } from './exceptions/CpfCnpjInvalidoException'
 import { validarCNPJCPF as validateCnpjOrCpf } from '../shared/validators/validarCNPJeCPF'
 import { FarmDomain } from './Farm'
 
